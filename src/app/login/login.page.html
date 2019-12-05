@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col text-center style="padding-top: 40px">
+        <ion-card>
+          <ion-card-header color="medium">
+            <ion-card-title *ngIf ="login">
+              Sign In
+            </ion-card-title>
+            <ion-card-title *ngIf ="!login">
+              Sign Up
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content no-padding padding-start padding-end>
+            <ion-item>
+              <ion-label position="stacked">ID <ion-text color="danger">*</ion-text></ion-label><ion-input [(ngModel)]="id">
+            </ion-input></ion-item>
+            <ion-item>
+              <ion-label position="stacked"><P></P>assword <ion-text color="danger">*</ion-text></ion-label><ion-input [(ngModel)]="password">
+            </ion-input></ion-item>
+          </ion-card-content>
+          <ion-card-content no-padding color="light">
+            <ion-item lines="none" color="light">
+              <ion-button fill="clear" slot="end" (click)="checkIdPwd()">Sign In</ion-button>
+              <ion-button fill="clear" slot="end" no-margin (click)="signUp()">Sign Up</ion-button></ion-item>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

@@ -1,0 +1,211 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-title>Category</ion-title>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="home"></ion-back-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+            <ion-button (click)="addMode()"><ion-icon [name]="selectedCat==-2 ? 'remove' : 'add'"></ion-icon></ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+
+    <ion-card *ngIf="selectedCat==-2">
+        <ion-card-header>
+            <ion-card-title>
+                <ion-input placeholder="New Category" [(ngModel)]="currentCategory.title"></ion-input>
+            </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+            <ion-row text-center>
+                <ion-col *ngFor="let color of colorCheck">
+                    <ion-label style="font-size:20px;padding: 0 2px;"><ion-icon name="water" [color]="color.name"></ion-icon></ion-label>
+                    <ion-checkbox [color]="color.name" [(ngModel)]="color.check" (ionChange)="setColor(color)"></ion-checkbox>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col>
+                    <ion-select placeholder="Select" [(ngModel)]="chip.type">
+                        <ion-select-option value="checkbox">Checkbox</ion-select-option>
+                        <ion-select-option value="radio">Radio</ion-select-option>
+                        <ion-select-option value="input">Input</ion-select-option>
+                        <ion-select-option value="textarea">Textarea</ion-select-option>
+                    </ion-select></ion-col>
+                <ion-col>
+                    <ion-input placeholder="name" [(ngModel)]="chip.name"></ion-input>
+                </ion-col>
+                <ion-col size="2.5">
+                    <ion-button (click)="add()" [disabled]="chip.type==''||chip.name==''" float-end color="medium" size="small">
+                        <ion-icon name="add"></ion-icon>
+                    </ion-button>
+                </ion-col></ion-row>
+                <ion-row *ngIf="currentCategory.checkbox.length!=0">
+                    <ion-col>
+                        <ion-label>Checkbox </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.checkbox; let k = index" [color]="typeColor('checkbox')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.checkbox,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="currentCategory.radio.length!=0">
+                    <ion-col>
+                        <ion-label>Radio </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.radio; let k = index" [color]="typeColor('radio')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.radio,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="currentCategory.input.length!=0">
+                    <ion-col>
+                        <ion-label>Input </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.input; let k = index" [color]="typeColor('input')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.input,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="currentCategory.textarea.length!=0">
+                    <ion-col>
+                        <ion-label>Textarea </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.textarea; let k = index" [color]="typeColor('textarea')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.textarea,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+            <ion-row>
+                <ion-col>
+                    <ion-button (click)=addCategory() [disabled]="currentCategory.title==''" float-end color="dark" fill="clear" no-padding>
+                        <ion-icon size="large" name="save"></ion-icon></ion-button>
+            </ion-col>
+            </ion-row>
+        </ion-card-content>
+    </ion-card>
+
+    <!-- Category List & Edit Mode -->
+    <ion-card *ngFor="let cat of tempList; let i = index">
+        <ion-card-header tappable (click)="getDetail(i)" [color]="cat.color">
+            <ion-card-title>
+                <div class="noMP" *ngIf="editCat != i">
+                    <ion-row><ion-col>{{cat.title}}</ion-col>
+                        <ion-col>
+                            <ion-button *ngIf="selectedCat == i" (click)="deleteCategory(i)" float-end size="small" color="light" fill="clear" no-padding>
+                                <ion-icon size="large" name="trash"></ion-icon></ion-button>
+                            <ion-button (click)="editMode(i); editCat = i" *ngIf="selectedCat == i" float-end size="small" color="light" fill="clear">
+                                <ion-icon size="large" name="create"></ion-icon></ion-button>
+                        </ion-col></ion-row></div>
+                <div class="noMP" *ngIf="editCat == i">
+                    <ion-row><ion-col>
+                            <ion-input placeholder="New Category" [(ngModel)]="currentCategory.title" no-padding></ion-input>
+                        </ion-col>
+                        <ion-col>
+                            <ion-button (click)="editCategory(i)" float-end size="small" color="light" fill="clear" no-padding>
+                                <ion-icon size="large" name="save"></ion-icon></ion-button>
+                            <ion-button (click)="emptyCategory();loadCategory(i)" float-end size="small" color="light" fill="clear">
+                                <ion-icon size="large" name="refresh"></ion-icon></ion-button>
+                        </ion-col></ion-row></div>
+            </ion-card-title>
+        </ion-card-header>
+        <ion-card-content *ngIf="selectedCat == i">
+            <div *ngIf="editCat == i">
+                <ion-row text-center>
+                    <ion-col *ngFor="let color of colorCheck">
+                        <ion-label style="font-size:20px;padding: 0 2px;"><ion-icon name="water" [color]="color.name"></ion-icon></ion-label>
+                        <ion-checkbox [color]="color.name" [(ngModel)]="color.check" (ionChange)="setColor(color)"></ion-checkbox>
+                    </ion-col>
+                </ion-row>
+                <ion-row>
+                    <ion-col>
+                        <ion-select placeholder="Select" [(ngModel)]="chip.type">
+                            <ion-select-option value="checkbox">Checkbox</ion-select-option>
+                            <ion-select-option value="radio">Radio</ion-select-option>
+                            <ion-select-option value="input">Input</ion-select-option>
+                            <ion-select-option value="textarea">Textarea</ion-select-option>
+                        </ion-select></ion-col>
+                    <ion-col>
+                        <ion-input placeholder="name" [(ngModel)]="chip.name"></ion-input>
+                    </ion-col>
+                    <ion-col size="2.5">
+                        <ion-button (click)="add()" [disabled]="chip.type==''||chip.name==''" float-end color="medium" size="small">
+                            <ion-icon name="add"></ion-icon>
+                        </ion-button>
+                    </ion-col></ion-row>
+                <ion-row *ngIf="currentCategory.checkbox.length!=0">
+                    <ion-col>
+                        <ion-label>Checkbox </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.checkbox; let k = index" [color]="typeColor('checkbox')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.checkbox,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="currentCategory.radio.length!=0">
+                    <ion-col>
+                        <ion-label>Radio </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.radio; let k = index" [color]="typeColor('radio')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.radio,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="currentCategory.input.length!=0">
+                    <ion-col>
+                        <ion-label>Input </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.input; let k = index" [color]="typeColor('input')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.input,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="currentCategory.textarea.length!=0">
+                    <ion-col>
+                        <ion-label>Textarea </ion-label>
+                        <ion-chip *ngFor="let ch of currentCategory.textarea; let k = index" [color]="typeColor('textarea')">
+                            <ion-label>{{ch}}</ion-label>
+                            <ion-icon (click)="delete(currentCategory.textarea,k)" size="small" name="close"></ion-icon>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+            </div>
+            <div *ngIf="editCat != i">
+                <ion-row *ngIf="cat.checkbox.length!=0">
+                    <ion-col>
+                        <ion-label>Checkbox </ion-label>
+                        <ion-chip *ngFor="let ch of cat.checkbox; let k = index" [color]="typeColor('checkbox')">
+                            <ion-label>{{ch}}</ion-label>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="cat.radio.length!=0">
+                    <ion-col>
+                        <ion-label>Radio </ion-label>
+                        <ion-chip *ngFor="let ch of cat.radio; let k = index" [color]="typeColor('radio')">
+                            <ion-label>{{ch}}</ion-label>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="cat.input.length!=0">
+                    <ion-col>
+                        <ion-label>Input </ion-label>
+                        <ion-chip *ngFor="let ch of cat.input; let k = index" [color]="typeColor('input')">
+                            <ion-label>{{ch}}</ion-label>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+                <ion-row *ngIf="cat.textarea.length!=0">
+                    <ion-col>
+                        <ion-label>Textarea </ion-label>
+                        <ion-chip *ngFor="let ch of cat.textarea; let k = index" [color]="typeColor('textarea')">
+                            <ion-label>{{ch}}</ion-label>
+                        </ion-chip>
+                    </ion-col>
+                </ion-row>
+            </div>
+        </ion-card-content>
+    </ion-card>
+
+</ion-content>

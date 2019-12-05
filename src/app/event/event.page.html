@@ -1,0 +1,71 @@
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>{{event.category}}</ion-title>
+      <ion-buttons slot="end" *ngIf="!editEnable">
+        <ion-button (click)="editEnable=true">
+          <ion-icon slot="icon-only" name="create"></ion-icon>
+        </ion-button>
+        <ion-button (click)="deleteEvent()">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons (click)="editEvent()" slot="end" *ngIf="editEnable" >
+        <ion-button>
+          <ion-icon slot="icon-only" name="save"></ion-icon>
+        </ion-button>
+        <ion-button (click)="resetEvent();copyEvent()">
+          <ion-icon slot="icon-only" name="refresh"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <ion-item>
+      <ion-input [disabled]="!editEnable" type="text" placeholder="Title" [(ngModel)]="event.title"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Start</ion-label>
+      <ion-datetime [disabled]="!editEnable" displayFormat="MM/DD/YYYY HH:mm" pickerFormat="MMM D:HH:mm" [(ngModel)]="event.startTime"></ion-datetime>
+    </ion-item>
+    <ion-item>
+      <ion-label>End</ion-label>
+      <ion-datetime [disabled]="!editEnable" displayFormat="MM/DD/YYYY HH:mm" pickerFormat="MMM D:HH:mm" [(ngModel)]="event.endTime"></ion-datetime>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-label>All Day?</ion-label>
+      <ion-checkbox [disabled]="!editEnable" no-margin [(ngModel)]="event.allDay" [color]="color"></ion-checkbox>
+    </ion-item>
+    <ion-list *ngIf="event.category!=''">
+      <ion-item-group *ngIf="event.checkbox.length!=0">
+        <ion-item-divider color="light">Checkbox</ion-item-divider>
+        <ion-item *ngFor="let item of event.checkbox;" lines="none">
+          <ion-label>{{item.name}}</ion-label>
+          <ion-checkbox [disabled]="!editEnable" no-margin [(ngModel)]="item.contents" [color]="color"></ion-checkbox>
+        </ion-item>
+      </ion-item-group>
+      <ion-item-group *ngIf="event.radio.length!=0">
+        <ion-item-divider color="light">Radio</ion-item-divider>
+        <ion-item lines="none">
+          <ion-radio-group>
+            <ion-chip *ngFor="let item of event.radio" lines="none" outline [color]="color">
+              <ion-label style="padding-right: 5px">{{item.name}}</ion-label><ion-radio [disabled]="!editEnable" [color]="color" [checked]="item.contents" (ionSelect)="setRadio(item)"></ion-radio>
+            </ion-chip>
+          </ion-radio-group>
+        </ion-item>
+      </ion-item-group>
+      <ion-item-group *ngIf="event.input.length!=0">
+        <ion-item-divider color="light"><li>Input</li></ion-item-divider>
+        <ion-item [disabled]="!editEnable" *ngFor="let item of event.input" lines="none">
+          <ion-label>{{item.name}}</ion-label>
+          <ion-input [(ngModel)]="item.contents" text-right placeholder="Enter" slot="end"></ion-input>
+        </ion-item>
+      </ion-item-group>
+      <ion-item-group *ngIf="event.textarea.length!=0">
+        <ion-item-divider color="light">Textarea</ion-item-divider>
+        <ion-item *ngFor="let item of event.textarea" lines="none">
+          <ion-label position="stacked">{{item.name}}</ion-label><br>
+          <ion-textarea [disabled]="!editEnable" [(ngModel)]="item.contents"></ion-textarea>
+        </ion-item>
+      </ion-item-group>
+    </ion-list>
+  </ion-content>
