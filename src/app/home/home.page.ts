@@ -54,6 +54,12 @@ export class HomePage implements OnInit {
               private  modalCtrl: ModalController, @Inject(LOCALE_ID)private locale: string) {
     this.categoryList = Global.categoryList;
     console.log(this.categoryList);
+
+    // 페이지 로드
+    // this.eventSource = Global.eventList;
+    // this.myCal.loadEvents();
+    console.table(this.eventSource);
+
   }
 
   ngOnInit() {
@@ -62,6 +68,11 @@ export class HomePage implements OnInit {
     }
     this.resetEvent();
     this.resetCategory();
+    // 이벤트 추가
+    /*
+    Global.eventList.forEach( ent => {
+      this.addEventOne(ent);
+    });*/
   }
 
   resetEvent() {
@@ -100,7 +111,7 @@ export class HomePage implements OnInit {
 
   addEvent() {
     console.log(this.event);
-    let eventCopy = {
+    const eventCopy = {
       title: this.event.title,
       category: this.event.category,
       checkbox: this.event.checkbox,
@@ -123,6 +134,34 @@ export class HomePage implements OnInit {
     this.myCal.loadEvents();
     this.resetEvent();
     this.resetCategory();
+  }
+
+  addEventOne(prmEvent) {
+
+    let eventCopy = {
+      title: prmEvent.title,
+      category: prmEvent.category,
+      checkbox: prmEvent.checkbox,
+      radio: prmEvent.radio,
+      input: prmEvent.input,
+      textarea: prmEvent.textarea,
+      startTime: new Date(prmEvent.startTime),
+      endTime: new Date(prmEvent.endTime),
+      allDay: prmEvent.allDay,
+    };
+
+    console.log('EVENT COPY');
+
+    if (eventCopy.allDay) {
+      let start = eventCopy.startTime;
+      let end = eventCopy.endTime;
+
+      eventCopy.startTime = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+      eventCopy.endTime = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() + 1));
+    }
+
+    this.eventSource.push(eventCopy);
+    this.myCal.loadEvents();
   }
 
   changeMode(mode) {
@@ -194,7 +233,7 @@ export class HomePage implements OnInit {
   setRadio(item) {
     this.event.radio.forEach(value => {
       value.contents = false;
-    })
+    });
     item.contents = true;
     console.log(this.event);
   }
