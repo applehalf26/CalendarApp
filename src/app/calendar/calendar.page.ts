@@ -1,17 +1,18 @@
 import {Component, Inject, LOCALE_ID, OnInit, ViewChild} from '@angular/core';
 import {CalendarComponent} from 'ionic2-calendar/calendar';
-import {AlertController, ModalController} from '@ionic/angular';
-import {formatDate} from '@angular/common';
 import {Router} from '@angular/router';
+import {AlertController, ModalController} from '@ionic/angular';
 import {Global} from '../globals/global';
+import {formatDate} from '@angular/common';
 import {EventPage} from '../event/event.page';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+  selector: 'app-calendar',
+  templateUrl: './calendar.page.html',
+  styleUrls: ['./calendar.page.scss'],
 })
-export class HomePage implements OnInit {
+export class CalendarPage implements OnInit {
 
   event = {
     title: '',
@@ -50,29 +51,31 @@ export class HomePage implements OnInit {
 
   @ViewChild(CalendarComponent, {static: false}) myCal: CalendarComponent;
 
-  constructor(private router: Router, private alertCtrl: AlertController,
+  constructor(private router: Router, private alertCtrl: AlertController, private http: HttpClient,
               private  modalCtrl: ModalController, @Inject(LOCALE_ID)private locale: string) {
-    this.categoryList = Global.categoryList;
-    console.log(this.categoryList);
-
-    // 페이지 로드
-    // this.eventSource = Global.eventList;
-    // this.myCal.loadEvents();
-    console.table(this.eventSource);
-
   }
 
   ngOnInit() {
-    if (Global.id === '') {
-      this.router.navigate(['/login']);
-    }
     this.resetEvent();
     this.resetCategory();
-    // 이벤트 추가
-    /*
-    Global.eventList.forEach( ent => {
-      this.addEventOne(ent);
-    });*/
+
+    // 페이지 로드
+  }
+
+  ionViewWillEnter() {
+    console.log('aa');
+    if (Global.id === '') {
+      this.router.navigate(['/login']);
+    } else {
+      this.eventSource = [];
+      // 이벤트 추가
+      Global.eventList.forEach( ent => {
+        this.addEventOne(ent);
+      });
+      console.table(this.eventSource);
+      this.categoryList = Global.categoryList;
+      console.log(this.categoryList);
+    }
   }
 
   resetEvent() {
@@ -109,31 +112,52 @@ export class HomePage implements OnInit {
     };
   }
 
-  addEvent() {
-    console.log(this.event);
-    const eventCopy = {
+  async addEvent() {
+    const event = {
+      id: Global.id,
       title: this.event.title,
       category: this.event.category,
       checkbox: this.event.checkbox,
       radio: this.event.radio,
       input: this.event.input,
       textarea: this.event.textarea,
-      startTime: new Date(this.event.startTime),
-      endTime: new Date(this.event.endTime),
+      startTime: this.event.startTime,
+      endTime: this.event.endTime,
       allDay: this.event.allDay,
     };
+    console.table(event);
 
-    if (eventCopy.allDay) {
-      let start = eventCopy.startTime;
-      let end = eventCopy.endTime;
+    const postResult = await Global.postAsync(this.http, '/event/add', event);
 
-      eventCopy.startTime = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
-      eventCopy.endTime = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() + 1));
+    if (postResult.success === true) {
+
+      console.log('Save Succeed');
+      const eventCopy = {
+        title: this.event.title,
+        category: this.event.category,
+        checkbox: this.event.checkbox,
+        radio: this.event.radio,
+        input: this.event.input,
+        textarea: this.event.textarea,
+        startTime: new Date(this.event.startTime),
+        endTime: new Date(this.event.endTime),
+        allDay: this.event.allDay,
+      };
+
+      if (eventCopy.allDay) {
+        let start = eventCopy.startTime;
+        let end = eventCopy.endTime;
+
+        eventCopy.startTime = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+        eventCopy.endTime = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() + 1));
+      }
+      this.eventSource.push(eventCopy);
+      this.myCal.loadEvents();
+      this.resetEvent();
+      this.resetCategory();
+    } else {
+      alert(postResult.message);
     }
-    this.eventSource.push(eventCopy);
-    this.myCal.loadEvents();
-    this.resetEvent();
-    this.resetCategory();
   }
 
   addEventOne(prmEvent) {
@@ -149,8 +173,6 @@ export class HomePage implements OnInit {
       endTime: new Date(prmEvent.endTime),
       allDay: prmEvent.allDay,
     };
-
-    console.log('EVENT COPY');
 
     if (eventCopy.allDay) {
       let start = eventCopy.startTime;
@@ -214,6 +236,7 @@ export class HomePage implements OnInit {
   getCategory(ev) {
     console.log(ev.target.value);
     this.category = this.categoryList[ev.target.value];
+    console.log(this.category);
     this.event.category = this.category.title;
     this.category.checkbox.forEach(value => {
       this.event.checkbox.push({ name: value, contents: false });
@@ -227,7 +250,7 @@ export class HomePage implements OnInit {
     this.category.textarea.forEach(value => {
       this.event.textarea.push({ name: value, contents: '' });
     });
-    console.log(this.category);
+    console.log(this.event);
   }
 
   setRadio(item) {
@@ -245,7 +268,7 @@ export class HomePage implements OnInit {
         event
       }
     });
-
+    modal.onDidDismiss().then( value => this.myCal.loadEvents());
     return await modal.present();
   }
 
@@ -255,5 +278,3 @@ export class HomePage implements OnInit {
     this.router.navigate(['login']);
   }
 }
-
-

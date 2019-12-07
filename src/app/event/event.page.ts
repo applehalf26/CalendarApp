@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {ModalController, NavParams} from '@ionic/angular';
+import {Global} from '../globals/global';
+import {HttpClient} from "@angular/common/http";
 
 @Component({
   selector: 'app-event',
@@ -22,7 +24,13 @@ export class EventPage implements OnInit {
   color = 'primary';
   editEnable = false;
 
-  constructor(private modalCtrl: ModalController, private navParams: NavParams) {
+  preEvent = {
+    title: '',
+    startTime: '',
+    endTime: ''
+  };
+
+  constructor(private modalCtrl: ModalController, private navParams: NavParams, private http: HttpClient) {
   }
 
   ngOnInit() {
@@ -49,6 +57,9 @@ export class EventPage implements OnInit {
   copyEvent() {
     console.table(this.navParams);
     let temp = this.navParams.data.event;
+    this.preEvent.title = temp.title;
+    this.preEvent.startTime = temp.startTime.toISOString();
+    this.preEvent.endTime = temp.endTime.toISOString();
     this.event.title = temp.title;
     this.event.category = temp.category;
     this.event.startTime = temp.startTime.toISOString();
@@ -78,17 +89,39 @@ export class EventPage implements OnInit {
     console.log(this.event);
   }
 
-  deleteEvent() {
+  async deleteEvent() {
     /*http*/
-    this.resetEvent();
+    const idx = Global.eventList.findIndex(x => x.title === this.preEvent.title
+        && x.startTime === this.preEvent.startTime && x.endTime === this.preEvent.endTime);
+    console.log(idx);
+    console.log(this.preEvent);
+    const dEvent = {
+      id: Global.id,
+      title: this.preEvent.title,
+      startTime: this.preEvent.startTime,
+      endTime: this.preEvent.endTime
+    };
+
+    const postResult = await Global.postAsync(this.http, '/event/delete', dEvent);
+    if (postResult.success === true) {
+      Global.eventList.splice(idx, 1);
+      this.resetEvent();
+      console.table(Global.eventList);
+      this.closeModal();
+    } else {
+      alert(postResult.message);
+    }
+
   }
 
-  editEvent() {
+    editEvent()
+    {
+
+    }
+
+    async closeModal()
+    {
+      await this.modalCtrl.dismiss();
+    }
 
   }
-
-  async closeModal() {
-    await this.modalCtrl.dismiss();
-  }
-
-}

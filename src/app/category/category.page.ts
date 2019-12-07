@@ -51,23 +51,23 @@ export class CategoryPage implements OnInit {
       color: 'primary',
   };
 
-  tempList = [];
+  categoryList = [];
 
   selectedCat = -1;
   editCat = -1;
 
 
   constructor(private router: Router, public http: HttpClient) {
-      if (Global.id === '') {
-          this.router.navigate(['/login']);
-      }
-      this.tempList = Global.categoryList;
   }
 
   ngOnInit() {
+  }
+
+  ionViewWillEnter() {
       if (Global.id === '') {
           this.router.navigate(['/login']);
       }
+      this.categoryList = Global.categoryList;
   }
 
   getDetail(i) {
@@ -153,15 +153,32 @@ export class CategoryPage implements OnInit {
       }
   }
 
-  addCategory() {
-    console.log(this.currentCategory);
-    this.tempList.push(this.currentCategory);
-    this.emptyCategory();
-    this.resetColor();
-    this.resetChip();
-    this.selectedCat = -1;
-    console.log(this.currentCategory);
-    console.log(Global.categoryList);
+  async addCategory() {
+      console.log(this.currentCategory);
+
+      let category = {
+          id: Global.id,
+          title: this.currentCategory.title,
+          checkbox: this.currentCategory.checkbox,
+          radio: this.currentCategory.radio,
+          input: this.currentCategory.input,
+          textarea: this.currentCategory.textarea,
+          color: this.currentCategory.color,
+      };
+
+      const postResult = await Global.postAsync(this.http, '/category/add', category);
+      if (postResult.success === true) {
+          console.log('Save Succeed');
+          this.categoryList.push(this.currentCategory);
+          this.emptyCategory();
+          this.resetColor();
+          this.resetChip();
+          this.selectedCat = -1;
+          console.log(this.currentCategory);
+      } else {
+          alert(postResult.message);
+      }
+      console.log(Global.categoryList);
   }
 
   /* EDIT */
@@ -171,16 +188,30 @@ export class CategoryPage implements OnInit {
       this.emptyCategory();
       this.loadCategory(i);
       console.log(this.currentCategory);
-      console.log(this.tempList[i]);
+      console.log(this.categoryList[i]);
       console.log(Global.categoryList[i]);
   }
 
-  editCategory(i) {
+  async editCategory(i) {
       console.log(Global.categoryList);
-      this.tempList[i] = this.currentCategory;
-      console.log(Global.categoryList);
-      this.editCat = -1;
-      this.emptyCategory();
+
+      let category = {
+          id: Global.id,
+          title: this.categoryList[i].title,
+          new: this.currentCategory
+      };
+
+      const postResult = await Global.postAsync(this.http, '/category/modify', category);
+      if (postResult.success === true) {
+          console.log('Edit Succeed');
+          this.categoryList[i] = this.currentCategory;
+          console.log(Global.categoryList);
+          this.editCat = -1;
+          this.emptyCategory();
+          console.log(this.currentCategory);
+      } else {
+          alert(postResult.message);
+      }
   }
 
   emptyCategory() {
@@ -195,18 +226,18 @@ export class CategoryPage implements OnInit {
   }
 
   loadCategory(i) {
-      this.currentCategory.title = this.tempList[i].title;
-      this.currentCategory.color = this.tempList[i].color;
-      this.tempList[i].checkbox.forEach(value => {
+      this.currentCategory.title = this.categoryList[i].title;
+      this.currentCategory.color = this.categoryList[i].color;
+      this.categoryList[i].checkbox.forEach(value => {
           this.currentCategory.checkbox.push(value);
       });
-      this.tempList[i].radio.forEach(value => {
+      this.categoryList[i].radio.forEach(value => {
           this.currentCategory.radio.push(value);
       });
-      this.tempList[i].input.forEach(value => {
+      this.categoryList[i].input.forEach(value => {
           this.currentCategory.input.push(value);
       });
-      this.tempList[i].textarea.forEach(value => {
+      this.categoryList[i].textarea.forEach(value => {
           this.currentCategory.textarea.push(value);
       });
       this.colorCheck.forEach(value => {
@@ -216,79 +247,24 @@ export class CategoryPage implements OnInit {
       });
   }
 
-  deleteCategory(i) {
-      console.log(this.tempList);
-      this.tempList.splice(i, 1);
-      console.log(Global.categoryList);
-      this.selectedCat = -1;
-      this.editCat = -1;
+  async deleteCategory(i) {
+      console.log(this.categoryList);
+      let category = {
+          id: Global.id,
+          title: this.categoryList[i].title
+      };
+
+      const postResult = await Global.postAsync(this.http, '/category/delete', category);
+      if (postResult.success === true) {
+          console.log('Delete Succeed');
+
+          this.categoryList.splice(i, 1);
+          console.log(Global.categoryList);
+          this.selectedCat = -1;
+          this.editCat = -1;
+          console.log(this.currentCategory);
+      } else {
+          alert(postResult.message);
+      }
   }
-
-  /* Http connection method */
-    // 비동기 HTTP Get Method
-    // 서버가 보낸 JSON obj를 리턴 (await getAsync() 형태로 비동기 처리를 해야 함)
-    async getAsync(prmURL: string, ...prmParams: string[]) {
-        // Header
-        const headers = new HttpHeaders();
-        headers.append('Accept', 'application/json');
-        headers.append('Content-Type', 'application/json');
-        const options = {headers, withCredentials: false};
-
-        // Concat Parameters
-        let paramString = '';
-        prmParams.forEach( p => { paramString += ('/' + p); });
-
-        // Request Get
-        return await new Promise(resolve => {
-            this.http.get<object>(
-                prmURL + '/' + paramString,
-                options
-            )
-                .subscribe(
-                    (res) => {
-                        resolve(res);
-                    },
-                    error => {
-                        resolve(error);
-                    }
-                );
-        });
-    }
-
-    // 비동기 HTTP Post Method
-    // [리턴값] :
-    // post의 결과로 서버가 보낸 JSON obj를 리턴 (await postAsync() 형태로 비동기 처리를 해야 함)
-    async postAsync(prmURL: string, ...prmParams: string[]) {
-        // Header
-        const headers = new HttpHeaders();
-        headers.append('Accept', 'application/json');
-        headers.append('Content-Type', 'application/json');
-        const options = {headers, withCredentials: false};
-
-        const requestData = {
-            id: 'tkals11',
-            password: '1234567'
-        };
-
-        // Concat Parameters
-        let paramString = '';
-        prmParams.forEach( p => { paramString += ('/' + p); });
-
-        // Request Post
-        return await new Promise(resolve => {
-            this.http.post<object>(
-                prmURL + '/' + paramString,
-                requestData,
-                options
-            )
-                .subscribe(
-                    (res) => {
-                        resolve(res);
-                    },
-                    error => {
-                        resolve(error);
-                    }
-                );
-        });
-    }
 }

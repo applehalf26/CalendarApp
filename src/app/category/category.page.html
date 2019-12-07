@@ -2,7 +2,7 @@
     <ion-toolbar color="primary">
         <ion-title>Category</ion-title>
         <ion-buttons slot="start">
-            <ion-back-button defaultHref="home"></ion-back-button>
+            <ion-back-button defaultHref="calendar"></ion-back-button>
         </ion-buttons>
         <ion-buttons slot="end">
             <ion-button (click)="addMode()"><ion-icon [name]="selectedCat==-2 ? 'remove' : 'add'"></ion-icon></ion-button>
@@ -79,7 +79,8 @@
                 </ion-row>
             <ion-row>
                 <ion-col>
-                    <ion-button (click)=addCategory() [disabled]="currentCategory.title==''" float-end color="dark" fill="clear" no-padding>
+                    <ion-button (click)=addCategory() [disabled]="currentCategory.title==''||(currentCategory.checkbox.length==0&&currentCategory.radio.length==0&&
+                    currentCategory.input.length==0&&currentCategory.textarea.length==0)" float-end color="dark" fill="clear" no-padding>
                         <ion-icon size="large" name="save"></ion-icon></ion-button>
             </ion-col>
             </ion-row>
@@ -87,7 +88,7 @@
     </ion-card>
 
     <!-- Category List & Edit Mode -->
-    <ion-card *ngFor="let cat of tempList; let i = index">
+    <ion-card *ngFor="let cat of categoryList; let i = index">
         <ion-card-header tappable (click)="getDetail(i)" [color]="cat.color">
             <ion-card-title>
                 <div class="noMP" *ngIf="editCat != i">
@@ -103,7 +104,8 @@
                             <ion-input placeholder="New Category" [(ngModel)]="currentCategory.title" no-padding></ion-input>
                         </ion-col>
                         <ion-col>
-                            <ion-button (click)="editCategory(i)" float-end size="small" color="light" fill="clear" no-padding>
+                            <ion-button [disabled]="currentCategory.title==''||(currentCategory.checkbox.length==0&&currentCategory.radio.length==0&&
+                    currentCategory.input.length==0&&currentCategory.textarea.length==0)" (click)="editCategory(i)" float-end size="small" color="light" fill="clear" no-padding>
                                 <ion-icon size="large" name="save"></ion-icon></ion-button>
                             <ion-button (click)="emptyCategory();loadCategory(i)" float-end size="small" color="light" fill="clear">
                                 <ion-icon size="large" name="refresh"></ion-icon></ion-button>

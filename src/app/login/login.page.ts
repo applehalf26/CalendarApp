@@ -43,6 +43,7 @@ export class LoginPage implements OnInit {
       Global.id = this.id;
       Global.password = this.password;
       this.clearIdPwd();
+      console.log(Global.id);
 
       const serverResponseCategories = await Global.getAsync(this.http, '/category/find/' + Global.id);
 
@@ -63,7 +64,7 @@ export class LoginPage implements OnInit {
       }
 
 
-      this.router.navigate(['/home']);
+      this.router.navigate(['/calendar']);
 
     } else {
 
@@ -93,7 +94,7 @@ export class LoginPage implements OnInit {
       const serverResponseCategories = await Global.getAsync(this.http, '/user/add');
 
 
-      this.router.navigate(['/home']);
+      this.router.navigate(['/calendar']);
     } else {
       alert(serverResponse.message);
       console.log('Login Failed');
