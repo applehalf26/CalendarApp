@@ -1,5 +1,5 @@
   <ion-header>
-    <ion-toolbar>
+    <ion-toolbar [color]="color">
       <ion-title>{{event.category}}</ion-title>
       <ion-buttons slot="end" *ngIf="!editEnable">
         <ion-button (click)="editEnable=true">
@@ -9,8 +9,8 @@
           <ion-icon slot="icon-only" name="trash"></ion-icon>
         </ion-button>
       </ion-buttons>
-      <ion-buttons (click)="editEvent()" slot="end" *ngIf="editEnable" >
-        <ion-button>
+      <ion-buttons slot="end" *ngIf="editEnable" >
+        <ion-button (click)="editEvent()">
           <ion-icon slot="icon-only" name="save"></ion-icon>
         </ion-button>
         <ion-button (click)="resetEvent();copyEvent()">
@@ -63,10 +63,10 @@
       <ion-item-group *ngIf="event.textarea.length!=0">
         <ion-item-divider color="light">Textarea</ion-item-divider>
         <ion-item *ngFor="let item of event.textarea" lines="none">
-          <ion-label position="stacked">{{item.name}}</ion-label><br>
+          <ion-label>{{item.name}}</ion-label><br>
           <ion-textarea [disabled]="!editEnable" [(ngModel)]="item.contents"></ion-textarea>
         </ion-item>
       </ion-item-group>
     </ion-list>
-    <ion-button expand="full" (click)="closeModal()"> Close <ion-icon name="close"> </ion-icon></ion-button>
+    <ion-button expand="full" (click)="closeModal(null)"> Close <ion-icon name="close"> </ion-icon></ion-button>
   </ion-content>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {ModalController, NavParams} from '@ionic/angular';
 import {Global} from '../globals/global';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-event',
@@ -21,13 +21,15 @@ export class EventPage implements OnInit {
     endTime: '',
     allDay: false
   };
+
   color = 'primary';
   editEnable = false;
 
   preEvent = {
     title: '',
     startTime: '',
-    endTime: ''
+    endTime: '',
+    allDay: false
   };
 
   constructor(private modalCtrl: ModalController, private navParams: NavParams, private http: HttpClient) {
@@ -38,6 +40,16 @@ export class EventPage implements OnInit {
     this.resetEvent();
     this.copyEvent();
     /* category color http 통신 */
+  }
+
+  getCategory(name) {
+    let color = 'light';
+    Global.categoryList.forEach(value => {
+      if (value.title === name){
+        color = value.color;
+      }
+    });
+    return color;
   }
 
   resetEvent() {
@@ -52,6 +64,12 @@ export class EventPage implements OnInit {
       endTime: new Date().toISOString(),
       allDay: false
     };
+    this.preEvent = {
+      title: '',
+      startTime: '',
+      endTime: '',
+      allDay: false
+    };
   }
 
   copyEvent() {
@@ -60,6 +78,7 @@ export class EventPage implements OnInit {
     this.preEvent.title = temp.title;
     this.preEvent.startTime = temp.startTime.toISOString();
     this.preEvent.endTime = temp.endTime.toISOString();
+    this.preEvent.allDay = temp.allDay;
     this.event.title = temp.title;
     this.event.category = temp.category;
     this.event.startTime = temp.startTime.toISOString();
@@ -77,6 +96,7 @@ export class EventPage implements OnInit {
     temp.textarea.forEach(value => {
       this.event.textarea.push({ name: value.name, contents: value.contents });
     });
+    this.color = this.getCategory(this.event.category);
     console.table(this.event);
     console.table(temp);
   }
@@ -107,21 +127,68 @@ export class EventPage implements OnInit {
       Global.eventList.splice(idx, 1);
       this.resetEvent();
       console.table(Global.eventList);
-      this.closeModal();
+      this.closeModal(idx);
     } else {
       alert(postResult.message);
     }
 
   }
 
-    editEvent()
-    {
+    async editEvent() {
+      const idx = Global.eventList.findIndex(x => x.title === this.preEvent.title
+          && x.startTime === this.preEvent.startTime && x.endTime === this.preEvent.endTime);
+      console.log(idx);
+      console.log(this.preEvent);
+      if (this.event.allDay) {
+        let start = new Date(this.event.startTime);
+        let end = new Date(this.event.endTime);
+
+        this.event.startTime = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())).toISOString();
+        if (!(this.event.endTime === this.preEvent.endTime && this.preEvent.allDay)) {
+          this.event.endTime = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() + 1)).toISOString();
+        }
+      }
+
+      const EEvent = {
+        id: Global.id,
+        title: this.preEvent.title,
+        startTime: this.preEvent.startTime,
+        endTime: this.preEvent.endTime,
+        new: this.event
+      };
+
+      const postResult = await Global.postAsync(this.http, '/event/modify', EEvent);
+
+      console.table(EEvent);
+
+      if (postResult.success === true) {
+        Global.eventList[idx] = this.event;
+        console.log(this.event);
+        this.navParams.data.event.title = this.event.title;
+        this.navParams.data.event.category = this.event.category;
+        this.navParams.data.event.checkbox = this.event.checkbox;
+        this.navParams.data.event.radio = this.event.radio;
+        this.navParams.data.event.input = this.event.input;
+        this.navParams.data.event.textarea = this.event.textarea;
+        this.navParams.data.event.startTime = new Date(this.event.startTime);
+        this.navParams.data.event.endTime = new Date(this.event.endTime);
+        this.navParams.data.event.allDay = this.event.allDay;
+
+        this.resetEvent();
+        console.log(Global.eventList[idx]);
+        console.table(Global.eventList);
+        this.resetEvent();
+        this.copyEvent();
+        this.editEnable = false;
+      } else {
+        alert(postResult.message);
+      }
 
     }
 
-    async closeModal()
+    async closeModal(data)
     {
-      await this.modalCtrl.dismiss();
+      await this.modalCtrl.dismiss(data);
     }
 
   }

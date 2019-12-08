@@ -38,10 +38,12 @@ export class Global {
 
     public static InitalizeCategories(serverResponseData) {
         this.categoryList = serverResponseData;
+        console.log(serverResponseData);
     }
 
     public static InitalizeEvents(serverResponseData) {
         this.eventList = serverResponseData;
+        console.table(serverResponseData);
 /*
         for (let i = 0; this.eventList.length; i++) {
             delete this.eventList[i].id;

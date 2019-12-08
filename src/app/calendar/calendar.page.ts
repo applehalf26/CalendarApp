@@ -121,10 +121,20 @@ export class CalendarPage implements OnInit {
       radio: this.event.radio,
       input: this.event.input,
       textarea: this.event.textarea,
-      startTime: this.event.startTime,
-      endTime: this.event.endTime,
+      startTime: new Date(this.event.startTime).toISOString(),
+      endTime: new Date(this.event.endTime).toISOString(),
       allDay: this.event.allDay,
+      color: this.category.color
     };
+
+    if (event.allDay) {
+      let start = new Date(event.startTime);
+      let end = new Date(event.endTime);
+
+      event.startTime = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())).toISOString();
+      event.endTime = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() + 1)).toISOString();
+    }
+
     console.table(event);
 
     const postResult = await Global.postAsync(this.http, '/event/add', event);
@@ -132,7 +142,8 @@ export class CalendarPage implements OnInit {
     if (postResult.success === true) {
 
       console.log('Save Succeed');
-      const eventCopy = {
+      Global.eventList.push(event);
+      let eventCopy = {
         title: this.event.title,
         category: this.event.category,
         checkbox: this.event.checkbox,
@@ -151,10 +162,13 @@ export class CalendarPage implements OnInit {
         eventCopy.startTime = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
         eventCopy.endTime = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() + 1));
       }
+      console.log(eventCopy);
       this.eventSource.push(eventCopy);
       this.myCal.loadEvents();
       this.resetEvent();
       this.resetCategory();
+      console.table(Global.eventList);
+      console.table(this.eventSource);
     } else {
       alert(postResult.message);
     }
@@ -173,14 +187,6 @@ export class CalendarPage implements OnInit {
       endTime: new Date(prmEvent.endTime),
       allDay: prmEvent.allDay,
     };
-
-    if (eventCopy.allDay) {
-      let start = eventCopy.startTime;
-      let end = eventCopy.endTime;
-
-      eventCopy.startTime = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
-      eventCopy.endTime = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() + 1));
-    }
 
     this.eventSource.push(eventCopy);
     this.myCal.loadEvents();
@@ -203,6 +209,7 @@ export class CalendarPage implements OnInit {
   today() {
     this.calendar.currentDate = new Date();
     console.log(this.event);
+    // console.log(new Date('2019-12-08T11:49:11.635Z'));
   }
 
   async onEventSelected(event) {
@@ -268,7 +275,14 @@ export class CalendarPage implements OnInit {
         event
       }
     });
-    modal.onDidDismiss().then( value => this.myCal.loadEvents());
+    modal.onDidDismiss().then( (value) => {
+      if (Global.eventList.length !== this.eventSource.length) {
+        console.log(value.data);
+        this.eventSource.splice(value.data.index, 1);
+        console.table(this.eventSource);
+      }
+      this.myCal.loadEvents();
+    });
     return await modal.present();
   }
 
