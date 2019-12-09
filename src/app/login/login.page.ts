@@ -10,8 +10,8 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 })
 export class LoginPage implements OnInit {
 
-  id = 'user1';
-  password = '7777';
+  id = '';
+  password = '';
 
   login = true;
 
@@ -93,6 +93,7 @@ export class LoginPage implements OnInit {
       /*서버에서 해당 ID의 카테고리, 일정 목록을 받아와 전역 변수에 초기화*/
       const serverResponseCategories = await Global.getAsync(this.http, '/user/add');
 
+      alert('회원가입이 완료되었습니다');
 
       this.router.navigate(['/calendar']);
     } else {

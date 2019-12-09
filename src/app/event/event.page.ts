@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {ModalController, NavParams} from '@ionic/angular';
 import {Global} from '../globals/global';
+import {Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 
 @Component({
@@ -32,7 +33,7 @@ export class EventPage implements OnInit {
     allDay: false
   };
 
-  constructor(private modalCtrl: ModalController, private navParams: NavParams, private http: HttpClient) {
+  constructor(private modalCtrl: ModalController, private navParams: NavParams, private http: HttpClient, private router: Router) {
   }
 
   ngOnInit() {
@@ -125,9 +126,14 @@ export class EventPage implements OnInit {
     const postResult = await Global.postAsync(this.http, '/event/delete', dEvent);
     if (postResult.success === true) {
       Global.eventList.splice(idx, 1);
+
+      Global.delIndex = idx;
+
       this.resetEvent();
       console.table(Global.eventList);
+
       this.closeModal(idx);
+
     } else {
       alert(postResult.message);
     }
@@ -186,9 +192,10 @@ export class EventPage implements OnInit {
 
     }
 
-    async closeModal(data)
-    {
+    async closeModal(data) {
       await this.modalCtrl.dismiss(data);
+
+      await this.router.navigate(['/calendar']);
     }
 
   }

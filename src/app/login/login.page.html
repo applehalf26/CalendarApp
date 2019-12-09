@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>login</ion-title>
+    <ion-title>[456] - Scheduler</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -19,11 +19,15 @@
           </ion-card-header>
           <ion-card-content no-padding padding-start padding-end>
             <ion-item>
-              <ion-label position="stacked">ID <ion-text color="danger">*</ion-text></ion-label><ion-input [(ngModel)]="id">
-            </ion-input></ion-item>
+              <ion-label position="stacked">ID <ion-text color="danger">*</ion-text></ion-label>
+              <ion-input [(ngModel)]="id">
+              </ion-input>
+            </ion-item>
             <ion-item>
-              <ion-label position="stacked">Password<ion-text color="danger">*</ion-text></ion-label><ion-input [(ngModel)]="password">
-            </ion-input></ion-item>
+              <ion-label position="stacked">Password<ion-text color="danger">*</ion-text></ion-label>
+              <ion-input type="password" [(ngModel)]="password" (keyup.enter)="checkIdPwd()">
+              </ion-input>
+            </ion-item>
           </ion-card-content>
           <ion-card-content no-padding color="light">
             <ion-item lines="none" color="light">

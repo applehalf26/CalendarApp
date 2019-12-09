@@ -49,7 +49,11 @@ export class CalendarPage implements OnInit {
 
   categoryList = [];
 
+  setStartTime = true;
+
   @ViewChild(CalendarComponent, {static: false}) myCal: CalendarComponent;
+
+  openEvent: any;
 
   constructor(private router: Router, private alertCtrl: AlertController, private http: HttpClient,
               private  modalCtrl: ModalController, @Inject(LOCALE_ID)private locale: string) {
@@ -90,7 +94,8 @@ export class CalendarPage implements OnInit {
       endTime: new Date().toISOString(),
       allDay: false
     };
-    this.event.title = 'sample';
+    this.event.title = 'title';
+    this.setStartTime = true;
   }
 
   resetEventCat() {
@@ -216,28 +221,36 @@ export class CalendarPage implements OnInit {
     let start = formatDate(event.startTime, 'medium', this.locale);
     let end = formatDate(event.endTime, 'medium', this.locale);
 
-    if (this.calendar.mode === 'month') {
+    if (!this.openEvent)
       this.openEventModal(event);
-    } else {
-      const alert = await this.alertCtrl.create({
-        header: event.title,
-        subHeader: event.category,
-        message: 'From: ' + start + '<br><br>To: ' + end,
-        buttons: ['OK']
-      });
-      alert.present();
-    }
   }
 
   onViewTitleChanged(title) {
     this.viewTitle = title;
   }
 
-  onTimeSelected(ev) {
+  /*onTimeSelected(ev) {
     let selected = new Date(ev.selectedTime);
     this.event.startTime = selected.toISOString();
     selected.setHours(selected.getHours() + 1);
     this.event.endTime = (selected.toISOString());
+  }*/
+  onTimeSelected(ev) {
+    let selected = new Date(ev.selectedTime);
+
+    if (this.calendar.mode === 'month') {
+      this.event.startTime = selected.toISOString();
+      this.event.endTime = (selected.toISOString());
+    } else {
+      if (this.setStartTime) {
+        this.event.startTime = selected.toISOString();
+      } else {
+        this.event.endTime = (selected.toISOString());
+      }
+    }
+
+
+    this.setStartTime = !this.setStartTime;
   }
 
   getCategory(ev) {
@@ -278,7 +291,14 @@ export class CalendarPage implements OnInit {
     modal.onDidDismiss().then( (value) => {
       if (Global.eventList.length !== this.eventSource.length) {
         console.log(value.data);
-        this.eventSource.splice(value.data.index, 1);
+        // this.eventSource.splice(value.data.index, 1);
+
+          if (Global.delIndex !== -1) {
+              this.eventSource.splice(Global.delIndex, 1);
+              Global.delIndex = -1;
+          }
+
+
         console.table(this.eventSource);
       }
       this.myCal.loadEvents();

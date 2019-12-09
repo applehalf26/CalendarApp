@@ -36,6 +36,8 @@ export class Global {
 
     public static prmURL = 'http://localhost:3000';
 
+    public static delIndex = -1;
+
     public static InitalizeCategories(serverResponseData) {
         this.categoryList = serverResponseData;
         console.log(serverResponseData);
